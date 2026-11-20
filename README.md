@@ -2,7 +2,7 @@
 
 A lightweight collaborative document editor: create and format documents in the browser, import files, and share documents with other users as editors or viewers.
 
-**Live demo:** `<ADD DEPLOYED URL>`
+**Live demo:** https://ajaia-docs-xvfp.onrender.com (free tier: first load after idle can take ~50 s)
 
 **Stack:** Next.js 16 (App Router) + TypeScript, TipTap 3 (ProseMirror) editor, SQLite via `better-sqlite3`, Zod validation, Vitest.
 

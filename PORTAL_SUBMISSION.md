@@ -1,7 +1,7 @@
 Ajaia Docs - lightweight collaborative document editor
 
 Google Drive folder: [add Drive link]
-Live app: [add deployed URL]
+Live app: https://ajaia-docs-xvfp.onrender.com (free hosting, so the first load after it has been idle can take up to a minute)
 Walkthrough video: [add video link]
 
 I built this with Next.js 16 and TypeScript, the TipTap editor, SQLite for storage, Zod for validation and Vitest for tests.

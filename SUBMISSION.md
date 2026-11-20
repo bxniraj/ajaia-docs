@@ -2,7 +2,7 @@
 
 | Item | Location |
 |---|---|
-| Live product URL | `<ADD DEPLOYED URL>` |
+| Live product URL | https://ajaia-docs-xvfp.onrender.com |
 | Walkthrough video | `VIDEO_URL.txt` |
 | Source code | This folder (`app/`, `components/`, `lib/`, `tests/`) |
 | Setup and run instructions | `README.md` |
