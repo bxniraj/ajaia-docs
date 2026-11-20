@@ -1,0 +1,14 @@
+# Render Blueprint: free Docker web service.
+# Note: the free plan has an ephemeral disk, so the SQLite file resets to the
+# seeded demo data on every redeploy / cold start. See README "Deployment".
+services:
+  - type: web
+    name: ajaia-docs
+    runtime: docker
+    plan: free
+    healthCheckPath: /login
+    envVars:
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DB_PATH
+        value: /app/data/ajaia.db
