@@ -1,77 +1,103 @@
-Ajaia Docs - lightweight collaborative document editor
+Ajaia Docs - a lightweight collaborative document editor
 
-Google Drive folder: [add Drive link]
-Live app: https://ajaia-docs-xvfp.onrender.com (free hosting, so the first load after it has been idle can take up to a minute)
-Walkthrough video: [add video link]
+Live app: https://ajaia-docs-xvfp.onrender.com
+GitHub repo: https://github.com/bxniraj/ajaia-docs
 
-I built this with Next.js 16 and TypeScript, the TipTap editor, SQLite for storage, Zod for validation and Vitest for tests.
+The app runs on Render's free plan, so if nobody has used it for a while, the first page load can take up to a minute. The repo contains everything: source code, README, architecture note, AI workflow note, SUBMISSION.md, the video link and screenshots.
+
+Stack: Next.js 16 with TypeScript, the TipTap editor, SQLite, Zod for validation and Vitest for tests.
 
 
-How to log in and test sharing
+Test accounts
 
-There are no passwords. On the login screen you just pick one of three demo users:
+There are no passwords. On the login screen you pick one of three demo users:
 
-- Alice (alice@ajaia.test) owns "Q4 Planning Notes", which is shared with Bob as an editor. She can also view Bob's "Vendor Brief" but not edit it.
+- Alice (alice@ajaia.test) owns "Q4 Planning Notes", which she has shared with Bob as an editor. She can also view Bob's "Vendor Brief" but not edit it.
 - Bob (bob@ajaia.test) owns "Vendor Brief" and can edit Alice's notes.
-- Carol (carol@ajaia.test) starts with nothing, so she's the easiest way to test sharing from scratch.
+- Carol (carol@ajaia.test) starts with no documents, so she's the easiest way to test sharing from scratch.
 
-A quick way to try everything: sign in as Alice and create a new document. Give it a name, write a few lines and try bold, italic, underline, headings and lists. Refresh the page and the content and formatting should still be there. Then click Share, add carol@ajaia.test with "Can view", and open a private window signed in as Carol. The document shows up under "Shared with me" and opens read-only. If Alice changes Carol to "Can edit", Carol can edit after a refresh. You can also use "Import file" to upload a .txt, .md or .docx file, which turns into a new editable document.
+To try the main flow in a few minutes:
+1. Sign in as Alice and create a new document. Give it a name, write a few lines, and try bold, italic, underline, headings and lists.
+2. Refresh the page. The content and formatting are still there.
+3. Click Share and add carol@ajaia.test with "Can view".
+4. Open a private window and sign in as Carol. The document appears under "Shared with me" and opens read-only.
+5. Back as Alice, change Carol to "Can edit". After a refresh, Carol can edit it.
+6. Use "Import file" to upload a .txt, .md or .docx file. It becomes a new editable document.
 
 
 What works
 
-You can create, rename, edit, delete and reopen documents. The editor supports bold, italic, underline, strikethrough, three heading sizes, bulleted and numbered lists, quotes, and undo/redo. Typing shortcuts like "# " for a heading or "- " for a list also work.
+Documents can be created, renamed, edited, deleted and reopened. The editor supports bold, italic, underline, strikethrough, three heading sizes, bulleted and numbered lists, quotes, and undo/redo. Shortcuts like "# " for a heading or "- " for a list work too.
 
-Documents save automatically a moment after you stop typing, and Ctrl+S saves right away. A small status line shows whether your changes are saved. If a save fails you get a retry button, and the page warns you before you leave with unsaved changes. If two people edit the same document and one saves first, the other gets a "reload latest" message instead of silently overwriting the first person's work.
+Changes save automatically a moment after you stop typing, and Ctrl+S saves immediately. A status line shows whether everything is saved. If a save fails, a retry button appears, and the browser warns you before you leave with unsaved changes. If two people edit the same document and one saves first, the other is asked to reload instead of silently overwriting the first person's work.
 
-File upload accepts .txt, .md and .docx files up to 2 MB, and the upload button says so. Headings, bold, italic, underline and lists come through. Images and tables inside Word files are dropped, and other file types are rejected with a clear message.
+File import accepts .txt, .md and .docx files up to 2 MB, and the import button states this. Headings, bold, italic, underline and lists are kept. Images and tables inside Word files are dropped. Any other file type is rejected with a clear message.
 
-For sharing, the owner adds people by email as either an editor or a viewer, and can change or remove that access later. The dashboard keeps "My documents" and "Shared with me" separate. All permission checks happen on the server. Viewers can't edit, editors can't share or delete, and someone with no access gets a "not found" response, so they can't even tell the document exists.
+The owner shares a document by email as either an editor or a viewer, and can change or remove that access later. The dashboard keeps "My documents" and "Shared with me" in separate lists. Permissions are enforced on the server for every request: viewers can't edit, editors can't share or delete, and anyone without access gets a "not found" response, so they can't even tell the document exists.
 
 
 Running it locally
 
-You need Node 20 or newer. Run "npm install" and then "npm run dev", and open http://localhost:3000. "npm test" runs the tests. The database file is created and filled with the demo data automatically the first time the app runs. Deleting the data folder resets it.
+You need Node 20 or newer. Run "npm install", then "npm run dev", and open http://localhost:3000. Run "npm test" for the tests. The database is created and filled with the demo data the first time the app runs. Deleting the data folder resets it.
 
-The repo includes a Dockerfile and a Render config for deployment. One thing to know about Render's free plan: it has no permanent disk, so the data goes back to the demo state whenever the service redeploys or restarts after being idle. It stays put during normal use and across page refreshes. Attaching a disk fixes this without any code changes.
+The repo also includes a Dockerfile and a Render config. Render's free plan has no permanent disk, so the data resets to the demo state whenever the service redeploys or restarts after being idle. It persists through normal use and page refreshes. Attaching a disk would fix this without any code changes.
 
 
-Main decisions
+Key decisions
 
-I kept everything in one Next.js app: the pages, the API and the database code. The API is a set of plain REST endpoints, which made it easy to test with curl.
+Everything lives in one Next.js app: pages, API and database code. The API is a small set of plain REST endpoints, which kept it easy to test directly.
 
-I store document content as HTML rather than the editor's internal JSON. The file imports already produce HTML, and an export feature would need it anyway. Before anything is saved, the server strips out anything the editor doesn't support, so scripts and similar junk can't get stored even if someone skips the editor and calls the API directly. The downside is that JSON would be a better starting point for real-time editing later on.
+Document content is stored as HTML rather than the editor's internal JSON. The file imports already produce HTML, and a future export feature would need it too. Before anything is saved, the server strips out anything the editor doesn't support, so scripts can't be stored even if someone bypasses the editor and calls the API directly. The tradeoff is that JSON would be a better base for real-time editing later.
 
-All the permission rules live in one file, and every request goes through them. That made the rules easy to test and hard to get wrong in one route and right in another.
+All permission rules sit in one module that every request goes through. That keeps them easy to test and consistent across routes.
 
-The login is fake, as the brief allows, but the session cookie is signed. Without that, anyone could edit their cookie and become another user, and the sharing demo wouldn't mean much.
+Login is simulated, which the brief allows, but the session cookie is signed. Otherwise anyone could edit their cookie to become another user, and the sharing model would mean nothing.
 
-I picked SQLite because reviewers don't need to set anything up, and it still gives real foreign keys, so removing a document also removes its shares. Switching to Postgres would only touch the database code.
+I chose SQLite because reviewers don't have to set anything up, and it still gives real foreign keys, so deleting a document also removes its shares. Moving to Postgres would only touch the database layer.
 
 
 What I left out on purpose
 
-I didn't build real-time co-editing. Doing it properly needs websockets and a syncing library like Yjs, and a rushed version would be worse than reliable conflict detection. I also skipped real accounts and passwords, invites for people who don't have an account yet, and images, tables, comments and version history in the editor. I wanted the core features to be solid rather than have many half-finished ones.
+I didn't build real-time co-editing. Doing it properly needs websockets and a sync library like Yjs, and a rushed version would be worse than reliable conflict detection. I also skipped real accounts and passwords, invitations for people without an account, and images, tables, comments and version history in the editor. I preferred a few solid features over many half-finished ones.
 
 
 Testing
 
-There are 16 automated tests. They cover who can read, edit, share and delete; sharing, changing roles and revoking access; cleanup when a document is deleted; stripping unsafe HTML; the conflict check; all three import formats, including bad and empty files; and rejecting a tampered login cookie. I also checked the API by hand against the production build for the main error cases, and ran a headless browser through the whole flow, from logging in to checking the read-only view as a second user, with no console errors.
+There are 16 automated tests. They cover:
+- who can read, edit, share and delete
+- sharing, changing roles and revoking access
+- cleanup when a document is deleted
+- removal of unsafe HTML
+- the edit-conflict check
+- all three import formats, including empty and broken files
+- rejection of a tampered login cookie
+
+I also checked the main error cases against the production build by calling the API directly. A headless browser ran the full flow, from login through to the read-only view as a second user, with no console errors. After deploying, I repeated a create, save, read and delete check on the live site.
 
 
 How I used AI
 
-I used Claude as a coding assistant. [add any other tools you used]
+I used Claude as a coding assistant throughout the project.
 
-It saved the most time on boilerplate: API routes, validation, database setup and styling. It also helped with the newest versions of Next.js and TipTap, where some APIs have changed recently.
+It saved the most time on boilerplate: API routes, validation, database setup and styling. It also helped with the latest versions of Next.js and TipTap, where several APIs have recently changed.
 
-Some of its output I changed or rejected. The browser test turned up a real bug: if you reloaded the page right after typing, the last few words could be lost, and the first version of the test missed this because it checked the wrong "Saved" label. I fixed the test and made the page send any unsaved changes as it closes. I also insisted on a signed cookie instead of a plain user ID, added the conflict check instead of letting the last save win, and fixed Word imports losing underlined text. I chose HTML over JSON for storage, and I held off on extra features partway through.
+Some of its output I changed or rejected:
+- The browser test found a real bug. Reloading the page right after typing could lose the last few words. The first version of the test missed it because it checked the wrong "Saved" label. I fixed the test and made the page send any unsaved changes as it closes.
+- I insisted on a signed session cookie instead of a plain user ID.
+- I added the conflict check instead of letting the last save win.
+- I fixed Word imports, which were losing underlined text.
+- I chose HTML over JSON for storage.
+- I held off on extra features partway through to protect the core.
 
-I didn't trust the code just because it looked right. Every feature listed above was checked with a test, a manual API call or the browser run.
+I didn't trust code because it looked right. Every feature listed here was confirmed by a test, a direct API call or the browser run.
 
 
-What's not finished, and what I'd do next
+Limitations and next steps
 
-Edits from two people are detected, not merged, and the login is a demo login. You can only share with the three existing accounts, and on the free host the data doesn't survive a restart.
+Simultaneous edits are detected but not merged, and login is simulated. Documents can only be shared with the three demo accounts. On the free host, data doesn't survive a restart.
 
-With another 2 to 4 hours I would add version history with restore, then export to Markdown and PDF, then a way to import a file into an existing document, and then run the browser test automatically on every change.
+With another 2 to 4 hours, I would add, in order:
+1. Version history with restore.
+2. Export to Markdown and PDF.
+3. Importing a file into an existing document.
+4. Running the browser test automatically on every change.
